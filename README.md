@@ -17,9 +17,9 @@ definitions: [ [.sense]
     context: str [.cf]
     labels: str [.labels]
     definition: str [.def]
-    variants: []
-    use: []
-    synonyms: []
+    variants: [.variants]
+    use: [.use]
+    synonyms: [.synonyms]
     examples: [
       {
         example: str [.x] ou [.unx]

@@ -18,8 +18,6 @@ def get_word_level_from_url(url):
 
 # fmt: off
 class OxfordItem(scrapy.Item):  
-    # define the fields for your item here like:
-    # name = scrapy.Field()
     ipa_nam = scrapy.Field(
         input_processor=MapCompose(remove_whitespace), 
         output_processor=TakeFirst()  
@@ -42,10 +40,11 @@ class OxfordItem(scrapy.Item):
 class DefinitionItem(scrapy.Item):
     definition = scrapy.Field(input_processor=MapCompose(remove_tags))
     cefr = scrapy.Field(input_processor=MapCompose(get_word_level_from_url))
-    grammar = scrapy.Field()
-    def_type = scrapy.Field()
-    context = scrapy.Field()
-    labels = scrapy.Field()
-    variants = scrapy.Field()
-    use = scrapy.Field()
-    synonyms = scrapy.Field()
+    grammar = scrapy.Field(input_processor=MapCompose(remove_tags))
+    def_type = scrapy.Field(input_processor=MapCompose(remove_tags))
+    context = scrapy.Field(input_processor=MapCompose(remove_tags))
+    labels = scrapy.Field(input_processor=MapCompose(remove_tags))
+    variants = scrapy.Field(input_processor=MapCompose(remove_tags))
+    use = scrapy.Field(input_processor=MapCompose(remove_tags))
+    synonyms = scrapy.Field(input_processor=MapCompose(remove_tags))
+    # examples = scrapy.Field(input_processor=MapCompose(remove_tags))

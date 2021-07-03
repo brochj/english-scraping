@@ -9,10 +9,10 @@ class DefinitionSpider(scrapy.Spider):
     name = "definition"
     allowed_domains = ["www.oxfordlearnersdictionaries.com"]
     start_urls = [
-        "https://www.oxfordlearnersdictionaries.com/us/definition/english/cable",
-        "https://www.oxfordlearnersdictionaries.com/us/definition/english/test",
-        "https://www.oxfordlearnersdictionaries.com/us/definition/english/car",
-        "https://www.oxfordlearnersdictionaries.com/us/definition/english/get",
+        # "https://www.oxfordlearnersdictionaries.com/us/definition/english/cable",
+        # "https://www.oxfordlearnersdictionaries.com/us/definition/english/test",
+        # "https://www.oxfordlearnersdictionaries.com/us/definition/english/car",
+        "https://www.oxfordlearnersdictionaries.com/us/definition/english/wrong",
         # "https://www.oxfordlearnersdictionaries.com/us/definition/english/should",
     ]
 
@@ -37,12 +37,29 @@ class DefinitionSpider(scrapy.Spider):
         # def_li.add_css("definition", "span.def")
         # def_li.add_css("cefr", ".symbols a::attr(href)")
 
-        # for def_li in response.css(".top-container + ol li"):
         for def_li in response.css(".top-container + ol")[0].css("li.sense"):
             definition = def_li.css("span.def").get()
             cefr = def_li.css(".symbols a::attr(href)").get() or ""
+            grammar = def_li.css(".grammar").get() or ""
+            def_type = def_li.css(".pos").get() or ""
+            context = def_li.css(".cf").get() or ""
+            labels = def_li.css(".labels").get() or ""
+            variants = def_li.css(".variants").get() or ""
+            use = def_li.css(".use").get() or ""
+            synonyms = def_li.css(".synonyms").get() or ""
+
+            # examples = def_li.css("span.x").get() or []
+
             def_loader.add_value("definition", definition)
             def_loader.add_value("cefr", cefr)
+            def_loader.add_value("grammar", grammar)
+            def_loader.add_value("def_type", def_type)
+            def_loader.add_value("context", context)
+            def_loader.add_value("labels", labels)
+            def_loader.add_value("variants", variants)
+            def_loader.add_value("use", use)
+            def_loader.add_value("synonyms", synonyms)
+            # def_loader.add_value("examples", examples)
 
         def_item = def_loader.load_item()
 
