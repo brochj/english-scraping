@@ -9,11 +9,11 @@ class DefinitionSpider(scrapy.Spider):
     name = "definition"
     allowed_domains = ["www.oxfordlearnersdictionaries.com"]
     start_urls = [
-        # "https://www.oxfordlearnersdictionaries.com/us/definition/english/cable",
-        # "https://www.oxfordlearnersdictionaries.com/us/definition/english/test",
-        # "https://www.oxfordlearnersdictionaries.com/us/definition/english/get",
+        "https://www.oxfordlearnersdictionaries.com/us/definition/english/cable",
+        "https://www.oxfordlearnersdictionaries.com/us/definition/english/test",
+        "https://www.oxfordlearnersdictionaries.com/us/definition/english/get",
         "https://www.oxfordlearnersdictionaries.com/us/definition/english/veranda",
-        # "https://www.oxfordlearnersdictionaries.com/us/definition/english/should",
+        "https://www.oxfordlearnersdictionaries.com/us/definition/english/should",
     ]
 
     def printer(self, value: str = "aqui"):
@@ -27,7 +27,7 @@ class DefinitionSpider(scrapy.Spider):
         loader.add_css("ipa_nam", ".phons_n_am span.phon::text")
         loader.add_css("ipa_br", ".phons_br span::text")
         loader.add_css("word_type", ".webtop span.pos::text")
-        loader.add_css("word_level", ".webtop div.symbols a::attr(href)")
+        loader.add_css("cefr", ".webtop div.symbols a::attr(href)")
 
         item = loader.load_item()
 
@@ -66,4 +66,4 @@ class DefinitionSpider(scrapy.Spider):
         self.printer("before return item")
         self.logger.info(item, def_item)
         self.printer("end return item")
-        return item, def_item
+        return item  # , def_item

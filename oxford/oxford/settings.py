@@ -64,7 +64,8 @@ ROBOTSTXT_OBEY = False
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
     # "oxford.pipelines.OxfordPipeline": 300,
-    "oxford.pipelines.JsonWriterPipeline": 400,
+    "oxford.pipelines.SaveWordPipeline": 300,
+    # "oxford.pipelines.JsonWriterPipeline": 400,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)

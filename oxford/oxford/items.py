@@ -12,7 +12,7 @@ def remove_whitespace(text: str) -> str:
     return text.strip()
 
 
-def get_word_level_from_url(url: str) -> str:
+def get_cefr_from_url(url: str) -> str:
     return url[-2:]
 
 
@@ -30,6 +30,7 @@ def listfy_examples(examples: str) -> list:
 
 # fmt: off
 class OxfordItem(scrapy.Item):  
+    word = scrapy.Field()
     ipa_nam = scrapy.Field(
         input_processor=MapCompose(remove_whitespace), 
         output_processor=TakeFirst()  
@@ -42,8 +43,8 @@ class OxfordItem(scrapy.Item):
         input_processor=MapCompose(), 
         output_processor=TakeFirst()
     )
-    word_level = scrapy.Field(
-        input_processor=MapCompose(get_word_level_from_url),
+    cefr = scrapy.Field(
+        input_processor=MapCompose(get_cefr_from_url),
         output_processor=TakeFirst(),
     )
 # fmt: on
@@ -51,7 +52,7 @@ class OxfordItem(scrapy.Item):
 
 class DefinitionItem(scrapy.Item):
     definition = scrapy.Field(input_processor=MapCompose(remove_tags))
-    cefr = scrapy.Field(input_processor=MapCompose(get_word_level_from_url))
+    cefr = scrapy.Field(input_processor=MapCompose(get_cefr_from_url))
     grammar = scrapy.Field(input_processor=MapCompose(remove_tags))
     def_type = scrapy.Field(input_processor=MapCompose(remove_tags))
     context = scrapy.Field(input_processor=MapCompose(remove_tags))
