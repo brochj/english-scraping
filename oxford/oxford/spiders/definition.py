@@ -11,8 +11,8 @@ class DefinitionSpider(scrapy.Spider):
     start_urls = [
         # "https://www.oxfordlearnersdictionaries.com/us/definition/english/cable",
         # "https://www.oxfordlearnersdictionaries.com/us/definition/english/test",
-        # "https://www.oxfordlearnersdictionaries.com/us/definition/english/car",
-        "https://www.oxfordlearnersdictionaries.com/us/definition/english/wrong",
+        # "https://www.oxfordlearnersdictionaries.com/us/definition/english/get",
+        "https://www.oxfordlearnersdictionaries.com/us/definition/english/veranda",
         # "https://www.oxfordlearnersdictionaries.com/us/definition/english/should",
     ]
 
@@ -48,7 +48,7 @@ class DefinitionSpider(scrapy.Spider):
             use = def_li.css(".use").get() or ""
             synonyms = def_li.css(".synonyms").get() or ""
 
-            # examples = def_li.css("span.x").get() or []
+            examples = def_li.css("span.x").getall()
 
             def_loader.add_value("definition", definition)
             def_loader.add_value("cefr", cefr)
@@ -59,7 +59,7 @@ class DefinitionSpider(scrapy.Spider):
             def_loader.add_value("variants", variants)
             def_loader.add_value("use", use)
             def_loader.add_value("synonyms", synonyms)
-            # def_loader.add_value("examples", examples)
+            def_loader.add_value("examples", examples)
 
         def_item = def_loader.load_item()
 
