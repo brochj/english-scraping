@@ -126,7 +126,6 @@ class SaveDefinitionPipeline:
 class DuplicatesWordsSQLitePipeline:
     def __init__(self):
         print_header("DuplicatesWordsSQLitePipeline: Enabled")
-        self.words_seen = set()
         self.sqlite = SqliteORM("dictionary.db")
 
     def process_item(self, item, spider):
@@ -140,7 +139,6 @@ class DuplicatesWordsSQLitePipeline:
             self.sqlite.close()
             raise DropItem(f"Duplicate word found: {item['word']}")
         else:
-            self.words_seen.add(adapter["word"])
             self.sqlite.close()
             return item
 
@@ -154,7 +152,6 @@ class DuplicatesWordsSQLitePipeline:
 class DuplicatesDefinitionsSQLitePipeline:
     def __init__(self):
         print_header("DuplicatesDefinitionssSQLitePipeline: Enabled")
-        self.definitions_seen = set()
         self.sqlite = SqliteORM("dictionary.db")
 
     def process_item(self, item, spider):
@@ -166,17 +163,18 @@ class DuplicatesDefinitionsSQLitePipeline:
 
         if self.definition_exists(adapter):
             self.sqlite.close()
-            raise DropItem(f"Duplicate definition found: {item['definition']}")
+            raise DropItem("Duplicate definition found")
         else:
-            self.definitions_seen.add(adapter["definition"])
             self.sqlite.close()
             return item
 
     def is_definition_item(self, item):
-        return item.get("def_type")
+        return item.get("definition")
 
     def definition_exists(self, item):
-        return self.sqlite.query_definition(item["definition"])
+        for i in item["definition"]:
+            if self.sqlite.query_definition(i):
+                return True
 
 
 class DuplicatesPipeline:

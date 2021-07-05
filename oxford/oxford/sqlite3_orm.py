@@ -11,10 +11,10 @@ class SqliteORM:
     def connect(self) -> Type[Connection]:
         self.connection = sqlite3.connect(self.db_name)
 
-    def close(self):
+    def close(self) -> None:
         self.connection.close()
 
-    def rollback(self):
+    def rollback(self) -> None:
         self.connection.rollback()
 
     def try_to_commit_and_close(self):
@@ -98,5 +98,7 @@ class SqliteORM:
 
     def query_definition(self, definition):
         cursor = self.connection.cursor()
-        cursor.execute(f"SELECT rowid, * FROM words WHERE definition = '{definition}'")
+        cursor.execute(
+            f"SELECT rowid, * FROM definitions WHERE definition = '{definition}'"
+        )
         return cursor.fetchone()
