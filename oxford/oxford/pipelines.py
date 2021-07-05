@@ -96,10 +96,7 @@ class SaveDefinitionPipeline:
 
     def get_word_id(self, spider):
         self.sqlite.connect()
-        print_header(f"spider.word: {spider.word}")
-        print_header(f"spider.word_type: {spider.word_type}")
         word_row = self.sqlite.query_word(spider.word, spider.word_type)
-        print_header(f"word_row: {word_row}")
         return word_row[1]
 
     def listfy_data(self, data: dict) -> List[tuple]:
@@ -124,7 +121,6 @@ class SaveDefinitionPipeline:
                     data.get("word_id"),
                 )
             )
-        print(data_list)
         return data_list
 
 
