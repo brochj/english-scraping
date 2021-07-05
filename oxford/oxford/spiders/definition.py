@@ -74,11 +74,11 @@ class DefinitionSpider(scrapy.Spider):
 
         def_item = def_loader.load_item()
 
-        self.printer("before return item")
-        # self.logger.info(item, def_item)
-        self.logger.info(item)
-        self.logger.info(response.request.url)
-        self.printer("end return item")
+        # self.printer("before return item")
+        # # self.logger.info(item, def_item)
+        # self.logger.info(item)
+        # self.logger.info(response.request.url)
+        # self.printer("end return item")
         return item  # , def_item
 
     def handle_error(self, failure):

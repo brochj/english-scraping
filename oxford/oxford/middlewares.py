@@ -33,8 +33,21 @@ class OxfordSpiderMiddleware:
         # it has processed the response.
 
         # Must return an iterable of Request, or item objects.
-        for i in result:
-            yield i
+
+        # print("_" * 50)
+        # print("result from middleware".center(50))
+        # print(result)
+        # print("_" * 50)
+        # print("SPIDER from middleware".center(50))
+        # print(spider)
+        # print("_" * 50)
+
+        for item in result:
+            # print("_" * 50)
+            # print("item from middleware".center(50))
+            # print(item)
+            # print("_" * 50)
+            yield item
 
     def process_spider_exception(self, response, exception, spider):
         # Called when a spider or process_spider_input() method
