@@ -28,11 +28,13 @@ class DefinitionSpider(scrapy.Spider):
         urls = [self.base_url + word for word in words]
 
         for url in urls:
+            word = url.split("/")[-1]
             yield scrapy.Request(url, self.parse, errback=self.handle_error)
 
     def parse(self, response):
         loader = ItemLoader(item=OxfordItem(), selector=response)
 
+        loader.add_css("word", "h1.headword::text")
         loader.add_css("ipa_nam", ".phons_n_am span.phon::text")
         loader.add_css("ipa_br", ".phons_br span::text")
         loader.add_css("word_type", ".webtop span.pos::text")
@@ -73,7 +75,9 @@ class DefinitionSpider(scrapy.Spider):
         def_item = def_loader.load_item()
 
         self.printer("before return item")
-        self.logger.info(item, def_item)
+        # self.logger.info(item, def_item)
+        self.logger.info(item)
+        self.logger.info(response.request.url)
         self.printer("end return item")
         return item  # , def_item
 

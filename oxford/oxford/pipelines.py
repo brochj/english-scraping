@@ -28,7 +28,6 @@ class SaveWordPipeline:
         self.sqlite.connect()
         self.sqlite.create_table(WORDS_TABLE)
 
-        item["word"] = "default word"
         self.sqlite.insert_word(item)
         self.sqlite.try_to_commit_and_close()
         self.print_header(f"WordItem saved into {self.sqlite.db_name}")

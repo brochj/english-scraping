@@ -30,7 +30,7 @@ def listfy_examples(examples: str) -> list:
 
 # fmt: off
 class OxfordItem(scrapy.Item):  
-    word = scrapy.Field()
+    word = scrapy.Field(output_processor=TakeFirst())
     ipa_nam = scrapy.Field(
         input_processor=MapCompose(remove_whitespace), 
         output_processor=TakeFirst()  
