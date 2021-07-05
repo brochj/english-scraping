@@ -1,10 +1,8 @@
 a
 a
-#abandon
-#get
-#of-course
-#often
-#oil
-#OK
-#qwertfds
-#zone
+get
+should
+must
+have
+has
+am

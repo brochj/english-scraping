@@ -70,6 +70,8 @@ class SaveDefinitionPipeline:
     def process_item(self, item, spider):
         if not self.is_definition_item(item):
             return item
+        if not self.is_empty(item):
+            return item
 
         adapter = ItemAdapter(item)
 
@@ -88,6 +90,9 @@ class SaveDefinitionPipeline:
 
     def is_definition_item(self, item):
         return item.get("def_type")
+
+    def is_empty(self, item):
+        return item.get("definition")
 
     def get_word_id(self, spider):
         self.sqlite.connect()
@@ -161,20 +166,57 @@ class DuplicatesDefinitionsSQLitePipeline:
         if not self.is_definition_item(adapter):
             return item
 
-        if self.definition_exists(adapter):
-            self.sqlite.close()
-            raise DropItem("Duplicate definition found")
-        else:
-            self.sqlite.close()
-            return item
+        def_exists = self.definition_exists(adapter)
+        self.remove_duplicates(adapter, def_exists)
+        self.sqlite.close()
+        return item
 
     def is_definition_item(self, item):
         return item.get("definition")
 
-    def definition_exists(self, item):
+    def definition_exists(self, item) -> List[bool]:
+        definition_exists = []
         for i in item["definition"]:
             if self.sqlite.query_definition(i):
-                return True
+                definition_exists.append(True)
+            else:
+                definition_exists.append(False)
+        return definition_exists
+
+    def remove_duplicates(self, item, exists: list):
+        new_definitions = {
+            "definition": [],
+            "cefr": [],
+            "grammar": [],
+            "def_type": [],
+            "context": [],
+            "labels": [],
+            "variants": [],
+            "use": [],
+            "synonyms": [],
+        }
+        for i, exist in enumerate(exists):
+            if not exist:
+                new_definitions["definition"].append(item["definition"][i])
+                new_definitions["cefr"].append(item["cefr"][i])
+                new_definitions["grammar"].append(item["grammar"][i])
+                new_definitions["def_type"].append(item["def_type"][i])
+                new_definitions["context"].append(item["context"][i])
+                new_definitions["labels"].append(item["labels"][i])
+                new_definitions["variants"].append(item["variants"][i])
+                new_definitions["use"].append(item["use"][i])
+                new_definitions["synonyms"].append(item["synonyms"][i])
+
+        item["definition"] = new_definitions["definition"]
+        item["cefr"] = new_definitions["cefr"]
+        item["grammar"] = new_definitions["grammar"]
+        item["def_type"] = new_definitions["def_type"]
+        item["context"] = new_definitions["context"]
+        item["labels"] = new_definitions["labels"]
+        item["variants"] = new_definitions["variants"]
+        item["use"] = new_definitions["use"]
+        item["synonyms"] = new_definitions["synonyms"]
+        return item
 
 
 class DuplicatesPipeline:
