@@ -8,18 +8,27 @@ from w3lib.html import remove_tags
 class DefinitionSpider(scrapy.Spider):
     name = "definition"
     allowed_domains = ["www.oxfordlearnersdictionaries.com"]
-    start_urls = [
-        "https://www.oxfordlearnersdictionaries.com/us/definition/english/cable",
-        "https://www.oxfordlearnersdictionaries.com/us/definition/english/test",
-        "https://www.oxfordlearnersdictionaries.com/us/definition/english/get",
-        "https://www.oxfordlearnersdictionaries.com/us/definition/english/veranda",
-        "https://www.oxfordlearnersdictionaries.com/us/definition/english/should",
-    ]
+    # start_urls = [
+    #     "https://www.oxfordlearnersdictionaries.com/us/definition/english/cable",
+    #     "https://www.oxfordlearnersdictionaries.com/us/definition/english/test",
+    #     "https://www.oxfordlearnersdictionaries.com/us/definition/english/get",
+    #     "https://www.oxfordlearnersdictionaries.com/us/definition/english/veranda",
+    #     "https://www.oxfordlearnersdictionaries.com/us/definition/english/should",
+    # ]
 
-    def printer(self, value: str = "aqui"):
-        self.logger.info("-" * 50)
-        self.logger.info(value.center(50))
-        self.logger.info("-" * 50)
+    base_url = "https://www.oxfordlearnersdictionaries.com/us/definition/english/"
+    words_list_file = "test"
+
+    def read_words_list(self):
+        with open(f"{self.words_list_file}.txt") as file:
+            return [line.rstrip() for line in file]
+
+    def start_requests(self):
+        words = self.read_words_list()
+        urls = [self.base_url + word for word in words]
+
+        for url in urls:
+            yield scrapy.Request(url, self.parse, errback=self.handle_error)
 
     def parse(self, response):
         loader = ItemLoader(item=OxfordItem(), selector=response)
@@ -67,3 +76,12 @@ class DefinitionSpider(scrapy.Spider):
         self.logger.info(item, def_item)
         self.printer("end return item")
         return item  # , def_item
+
+    def handle_error(self, failure):
+        url = failure.request.url
+        self.logger.error("Failure type: %s, URL: %s", failure.type, url)
+
+    def printer(self, value: str = "aqui"):
+        self.logger.info("-" * 50)
+        self.logger.info(value.center(50))
+        self.logger.info("-" * 50)

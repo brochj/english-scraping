@@ -31,13 +31,14 @@ class SaveWordPipeline:
         item["word"] = "default word"
         self.sqlite.insert_word(item)
         self.sqlite.try_to_commit_and_close()
-        self.print_header("Item Saved")
+        self.print_header(f"WordItem saved into {self.sqlite.db_name}")
         return item
 
     def print_header(self, msg: str = "SaveWordPipeline"):
-        print("-" * 25)
-        print(msg.center(25))
-        print("-" * 25)
+        length = 45
+        print("-" * length)
+        print(msg.center(length))
+        print("-" * length)
 
 
 class DuplicatesPipeline:
