@@ -66,9 +66,9 @@ ITEM_PIPELINES = {
     # "oxford.pipelines.OxfordPipeline": 300,
     # "oxford.pipelines.DuplicatesPipeline": 290,
     "oxford.pipelines.DuplicatesWordsSQLitePipeline": 298,
-    "oxford.pipelines.DuplicatesDefinitionsSQLitePipeline": 299,
+    # "oxford.pipelines.DuplicatesDefinitionsSQLitePipeline": 299,
     "oxford.pipelines.SaveWordPipeline": 300,
-    # "oxford.pipelines.SaveDefinitionPipeline": 301,
+    "oxford.pipelines.SaveDefinitionPipeline": 301,
     # "oxford.pipelines.JsonWriterPipeline": 400,
 }
 

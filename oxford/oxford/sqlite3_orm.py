@@ -64,7 +64,7 @@ class SqliteORM:
         examples = values.get("examples")
         word_id = values.get("word_id")
         cursor.execute(
-            "INSERT INTO words VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO definitions VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             (
                 definition,
                 cefr,
@@ -79,12 +79,15 @@ class SqliteORM:
             ),
         )
 
+    def insert_many_definitions(self, values: list) -> None:
+        cursor = self.connection.cursor()
+        cursor.executemany(
+            "INSERT INTO definitions VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            values,
+        )
+
     def last_word_id_inserted(self, cursor):
         return cursor.lastrowid
-        # cursor.execute(
-        #     f"SELECT rowid, * FROM words WHERE word = {word} AND word_type = {word_type}"
-        # )
-        # return cursor.fetchone()
 
     def query_word(self, word, word_type):
         cursor = self.connection.cursor()

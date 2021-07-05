@@ -18,6 +18,8 @@ class DefinitionSpider(scrapy.Spider):
 
     base_url = "https://www.oxfordlearnersdictionaries.com/us/definition/english/"
     words_list_file = "test"
+    word = None
+    word_type = None
 
     def read_words_list(self):
         with open(f"{self.words_list_file}.txt") as file:
@@ -41,6 +43,9 @@ class DefinitionSpider(scrapy.Spider):
         loader.add_css("cefr", ".webtop div.symbols a::attr(href)")
 
         item = loader.load_item()
+
+        self.word = item["word"]
+        self.word_type = item["word_type"]
 
         def_loader = ItemLoader(item=DefinitionItem(), selector=response)
 
@@ -79,7 +84,7 @@ class DefinitionSpider(scrapy.Spider):
         # self.logger.info(item)
         # self.logger.info(response.request.url)
         # self.printer("end return item")
-        return item  # , def_item
+        return item, def_item
 
     def handle_error(self, failure):
         url = failure.request.url

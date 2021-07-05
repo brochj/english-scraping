@@ -60,6 +60,7 @@ class DefinitionItem(scrapy.Item):
     variants = scrapy.Field(input_processor=MapCompose(remove_tags))
     use = scrapy.Field(input_processor=MapCompose(remove_tags))
     synonyms = scrapy.Field(input_processor=MapCompose(remove_tags))
+    word_id = scrapy.Field()
     examples = scrapy.Field(
         input_processor=Compose(join_examples),
         output_processor=MapCompose(remove_tags, listfy_examples),
