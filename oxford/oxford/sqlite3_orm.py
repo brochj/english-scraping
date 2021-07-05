@@ -92,3 +92,8 @@ class SqliteORM:
             f"SELECT rowid, * FROM words WHERE word = '{word}' AND word_type = '{word_type}'"
         )
         return cursor.fetchone()
+
+    def query_definition(self, definition):
+        cursor = self.connection.cursor()
+        cursor.execute(f"SELECT rowid, * FROM words WHERE definition = '{definition}'")
+        return cursor.fetchone()
