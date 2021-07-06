@@ -84,7 +84,8 @@ class DefinitionSpider(scrapy.Spider):
                 example_dict["context"] = example.css("span.cf").get() or ""
                 example_dict["labels"] = example.css("span.labels").get() or ""
 
-                def_dict["examples"].append(rm_tags(example_dict))
+                if not example_dict["example"] == "":
+                    def_dict["examples"].append(rm_tags(example_dict))
 
             defs.append(rm_tags(def_dict))
 
