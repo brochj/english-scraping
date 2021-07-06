@@ -47,12 +47,12 @@ class SaveWordPipeline:
         self.sqlite.try_to_commit_and_close()
         return item
 
+    def is_word_item(self, item):
+        return item.get("word_type")
+
     def save_word(self, item):
         self.last_word_id = self.sqlite.insert_word(item)
         print_header(f"WordItem saved into {self.sqlite.db_name}")
-
-    def is_word_item(self, item):
-        return item.get("word_type")
 
 
 class SaveDefinitionPipeline:
