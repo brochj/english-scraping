@@ -1,8 +1,11 @@
 import scrapy
 
 from scrapy.loader import ItemLoader
-from oxford.items import OxfordItem, DefinitionItem
-from w3lib.html import remove_tags
+from itemloaders import ItemAdapter
+from oxford.items import WordItem, DefinitionItem, ExampleItem
+from oxford.items import rm_tags, get_cefr_from_url
+from copy import deepcopy
+import json
 
 
 class DefinitionSpider(scrapy.Spider):
@@ -18,8 +21,6 @@ class DefinitionSpider(scrapy.Spider):
 
     base_url = "https://www.oxfordlearnersdictionaries.com/us/definition/english/"
     words_list_file = "test"
-    word = None
-    word_type = None
 
     def read_words_list(self):
         with open(f"{self.words_list_file}.txt") as file:
@@ -34,7 +35,25 @@ class DefinitionSpider(scrapy.Spider):
             yield scrapy.Request(url, self.parse, errback=self.handle_error)
 
     def parse(self, response):
-        loader = ItemLoader(item=OxfordItem(), selector=response)
+        def_dict = {
+            "definition": "",
+            "cefr": "",
+            "grammar": "",
+            "def_type": "",
+            "context": "",
+            "labels": "",
+            "variants": "",
+            "use": "",
+            "synonyms": "",
+            "examples": [],
+        }
+        ex_dict = {
+            "example": "",
+            "context": "",
+            "labels": "",
+        }
+
+        loader = ItemLoader(item=WordItem(), selector=response)
 
         loader.add_css("word", "h1.headword::text")
         loader.add_css("ipa_nam", ".phons_n_am span.phon::text")
@@ -42,49 +61,37 @@ class DefinitionSpider(scrapy.Spider):
         loader.add_css("word_type", ".webtop span.pos::text")
         loader.add_css("cefr", ".webtop div.symbols a::attr(href)")
 
+        definitions = response.css(".top-container + ol")[0].css("li.sense")
+        defs = []
+        for def_li in definitions:
+
+            def_dict["definition"] = def_li.css("span.def").get() or ""
+            def_dict["cefr"] = def_li.css(".symbols a::attr(href)").get() or ""
+            def_dict["grammar"] = def_li.css(".grammar").get() or ""
+            def_dict["def_type"] = def_li.css(".pos").get() or ""
+            def_dict["context"] = def_li.css(".cf").get() or ""
+            def_dict["labels"] = def_li.css(".labels").get() or ""
+            def_dict["variants"] = def_li.css(".variants").get() or ""
+            def_dict["use"] = def_li.css(".use").get() or ""
+            def_dict["synonyms"] = def_li.css(".synonyms").get() or ""
+
+            def_dict["cefr"] = get_cefr_from_url(def_dict["cefr"])
+
+            def_dict["examples"] = []
+            for example in def_li.css("li > ul.examples > li"):
+                example_dict = {}
+                example_dict["example"] = example.css("span.x").get() or ""
+                example_dict["context"] = example.css("span.cf").get() or ""
+                example_dict["labels"] = example.css("span.labels").get() or ""
+
+                def_dict["examples"].append(rm_tags(example_dict))
+
+            defs.append(rm_tags(def_dict))
+
+        loader.add_value("definitions", defs)
+
         item = loader.load_item()
-
-        self.word = item["word"]
-        self.word_type = item["word_type"]
-
-        def_loader = ItemLoader(item=DefinitionItem(), selector=response)
-
-        # def_li = def_loader.nested_css(".top-container + ol li")
-        # def_li.add_css("definition", "span.def")
-        # def_li.add_css("cefr", ".symbols a::attr(href)")
-
-        for def_li in response.css(".top-container + ol")[0].css("li.sense"):
-            definition = def_li.css("span.def").get()
-            cefr = def_li.css(".symbols a::attr(href)").get() or ""
-            grammar = def_li.css(".grammar").get() or ""
-            def_type = def_li.css(".pos").get() or ""
-            context = def_li.css(".cf").get() or ""
-            labels = def_li.css(".labels").get() or ""
-            variants = def_li.css(".variants").get() or ""
-            use = def_li.css(".use").get() or ""
-            synonyms = def_li.css(".synonyms").get() or ""
-
-            examples = def_li.css("span.x").getall()
-
-            def_loader.add_value("definition", definition)
-            def_loader.add_value("cefr", cefr)
-            def_loader.add_value("grammar", grammar)
-            def_loader.add_value("def_type", def_type)
-            def_loader.add_value("context", context)
-            def_loader.add_value("labels", labels)
-            def_loader.add_value("variants", variants)
-            def_loader.add_value("use", use)
-            def_loader.add_value("synonyms", synonyms)
-            def_loader.add_value("examples", examples)
-
-        def_item = def_loader.load_item()
-
-        # self.printer("before return item")
-        # # self.logger.info(item, def_item)
-        # self.logger.info(item)
-        # self.logger.info(response.request.url)
-        # self.printer("end return item")
-        return item, def_item
+        return item
 
     def handle_error(self, failure):
         url = failure.request.url

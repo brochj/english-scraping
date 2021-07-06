@@ -6,6 +6,7 @@
 import scrapy
 from itemloaders.processors import MapCompose, TakeFirst, Compose
 from w3lib.html import remove_tags
+from copy import deepcopy
 
 
 def remove_whitespace(text: str) -> str:
@@ -28,8 +29,19 @@ def listfy_examples(examples: str) -> list:
     return [examples.split(" | ")]
 
 
+def rm_tags(dictionary: dict) -> dict:
+    value = deepcopy(dictionary)
+    if not value:
+        return value
+    for key, data in value.items():
+        if isinstance(data, list):
+            continue
+        value[key] = remove_tags(data)
+    return value
+
+
 # fmt: off
-class OxfordItem(scrapy.Item):  
+class WordItem(scrapy.Item):  
     word = scrapy.Field(output_processor=TakeFirst())
     ipa_nam = scrapy.Field(
         input_processor=MapCompose(remove_whitespace), 
@@ -47,6 +59,7 @@ class OxfordItem(scrapy.Item):
         input_processor=MapCompose(get_cefr_from_url),
         output_processor=TakeFirst(),
     )
+    definitions = scrapy.Field()  # [DefinitionItem, DefinitionItem]
 # fmt: on
 
 
@@ -61,7 +74,11 @@ class DefinitionItem(scrapy.Item):
     use = scrapy.Field(input_processor=MapCompose(remove_tags))
     synonyms = scrapy.Field(input_processor=MapCompose(remove_tags))
     word_id = scrapy.Field()
-    examples = scrapy.Field(
-        input_processor=Compose(join_examples),
-        output_processor=MapCompose(remove_tags, listfy_examples),
-    )
+    examples = scrapy.Field()  # [ExampleItem, ExampleItem]
+
+
+class ExampleItem(scrapy.Item):
+    example = scrapy.Field()
+    context = scrapy.Field()
+    labels = scrapy.Field()
+    definition_id = scrapy.Field()
