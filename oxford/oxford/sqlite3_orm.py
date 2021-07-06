@@ -61,7 +61,6 @@ class SqliteORM:
         variants = values.get("variants")
         use = values.get("use")
         synonyms = values.get("synonyms")
-        examples = values.get("examples")
         word_id = values.get("word_id")
         cursor.execute(
             "INSERT INTO definitions VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
@@ -78,6 +77,7 @@ class SqliteORM:
                 word_id,
             ),
         )
+        return cursor.lastrowid
 
     def insert_many_definitions(self, values: list) -> None:
         cursor = self.connection.cursor()

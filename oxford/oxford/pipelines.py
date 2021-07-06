@@ -7,6 +7,7 @@ import json
 from typing import List
 
 from scrapy.exceptions import DropItem
+from copy import deepcopy
 
 # useful for handling different item types with a single interface
 from itemadapter import ItemAdapter, is_item
@@ -68,60 +69,46 @@ class SaveDefinitionPipeline:
         self.sqlite.try_to_commit_and_close()
 
     def process_item(self, item, spider):
-        if not self.is_definition_item(item):
+        if self.definition_is_not_a_list(item):
             return item
-        if not self.is_empty(item):
+        if self.is_empty(item):
             return item
-
-        adapter = ItemAdapter(item)
 
         self.sqlite.connect()
-        self.word_id = self.get_word_id(spider)
-        adapter["word_id"] = self.word_id
+        self.word_id = self.get_word_id(item)
 
-        self.save_definitions(adapter)
+        for definition in item["definitions"]:
+            new_def = self.insert_word_id_into(definition)
+            self.save_definition(new_def)
+
         self.sqlite.try_to_commit_and_close()
-        return adapter
+        return item
 
-    def save_definitions(self, item):
-        definitions = self.listfy_data(item)
-        self.sqlite.insert_many_definitions(definitions)
-        print_header(f"DefinitionItem saved into {self.sqlite.db_name}")
+    def definition_is_not_a_list(self, item) -> bool:
+        return not isinstance(item.get("definitions"), list)
 
-    def is_definition_item(self, item):
-        return item.get("def_type")
+    def is_empty(self, item) -> bool:
+        return not item.get("definitions")
 
-    def is_empty(self, item):
-        return item.get("definition")
-
-    def get_word_id(self, spider):
+    def get_word_id(self, item) -> int:
         self.sqlite.connect()
-        word_row = self.sqlite.query_word(spider.word, spider.word_type)
+        word_row = self.sqlite.query_word(item["word"], item["word_type"])
         return word_row[1]
 
-    def listfy_data(self, data: dict) -> List[tuple]:
-        """
-        data: {"defs": [def0, def1, ..., defN], "cefr": [cefr0, cefr1, ..., cefrN]}
-        returns:
-            [(def0, cefr0), (def1, cefr1), ..., (defN, cefrN)]
-        """
-        data_list = []
-        for i, item in enumerate(data.get("definition")):
-            data_list.append(
-                (
-                    data.get("definition")[i],
-                    data.get("cefr")[i],
-                    data.get("grammar")[i],
-                    data.get("def_type")[i],
-                    data.get("context")[i],
-                    data.get("labels")[i],
-                    data.get("variants")[i],
-                    data.get("use")[i],
-                    data.get("synonyms")[i],
-                    data.get("word_id"),
-                )
-            )
-        return data_list
+    def insert_word_id_into(self, data: dict) -> dict:
+        new_data = deepcopy(data)
+        new_data["word_id"] = self.word_id
+        return new_data
+
+    def save_definition(self, definition: dict):
+        if self.definition_is_empty(definition):
+            return
+
+        self.sqlite.insert_definition(definition)
+        print_header(f"DefinitionItem saved into {self.sqlite.db_name}")
+
+    def definition_is_empty(self, data: dict) -> bool:
+        return data["definition"] == ""
 
 
 class DuplicatesWordsSQLitePipeline:
