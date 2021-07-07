@@ -129,14 +129,12 @@ class SaveExamplePipeline:
         self.word_id = self.get_word_id(item)
 
         for definition in item["definitions"]:
-            print("\ndefinition:", definition)
             if self.definition_is_not_valid(definition):
                 continue
 
             self.definition_id = self.get_definition_id(definition)
 
             for example in definition["examples"]:
-                print("\nexample:", example)
                 if self.is_example_empty(example):
                     continue
 
