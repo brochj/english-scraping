@@ -22,6 +22,7 @@ class SqliteORM:
             self.connection.commit()
         except:
             self.connection.rollback()
+            self.connection.close()
             raise
         finally:
             self.connection.close()

@@ -77,6 +77,8 @@ class SaveDefinitionPipeline:
         self.word_id = self.get_word_id(item)
 
         for definition in item["definitions"]:
+            if self.definition_is_empty(definition):
+                continue
             new_def = self.insert_word_id_into(definition)
             self.save_definition(new_def)
 
@@ -86,13 +88,16 @@ class SaveDefinitionPipeline:
     def definition_is_not_a_list(self, item) -> bool:
         return not isinstance(item.get("definitions"), list)
 
-    def is_empty(self, item) -> list:
-        return not item.get("definitions")
+    def is_empty(self, item) -> bool:
+        return not len(item.get("definitions"))
 
     def get_word_id(self, item) -> int:
         self.sqlite.connect()
         word_row = self.sqlite.query_word(item["word"], item["word_type"])
         return word_row[1]
+
+    def definition_is_empty(self, data: dict) -> bool:
+        return data["definition"] == ""
 
     def insert_word_id_into(self, data: dict) -> dict:
         new_data = deepcopy(data)
@@ -100,13 +105,7 @@ class SaveDefinitionPipeline:
         return new_data
 
     def save_definition(self, definition: dict) -> None:
-        if self.definition_is_empty(definition):
-            return
-
         self.sqlite.insert_definition(definition)
-
-    def definition_is_empty(self, data: dict) -> bool:
-        return data["definition"] == ""
 
 
 class SaveExamplePipeline:
@@ -123,18 +122,24 @@ class SaveExamplePipeline:
         self.sqlite.try_to_commit_and_close()
 
     def process_item(self, item, spider):
-        if self.examples_are_not_a_list(item):
-            return item
-        if self.is_empty(item):
+        if self.definitions_are_not_a_list(item):
             return item
 
         self.sqlite.connect()
         self.word_id = self.get_word_id(item)
 
         for definition in item["definitions"]:
+            print("\ndefinition:", definition)
+            if self.definition_is_not_valid(definition):
+                continue
+
             self.definition_id = self.get_definition_id(definition)
 
             for example in definition["examples"]:
+                print("\nexample:", example)
+                if self.is_example_empty(example):
+                    continue
+
                 new_example = self.insert_word_id_into(example)
                 final_example = self.insert_definition_id_into(new_example)
                 self.save_example(final_example)
@@ -143,20 +148,38 @@ class SaveExamplePipeline:
         self.print_result(item)
         return item
 
-    def examples_are_not_a_list(self, item) -> bool:
-        return not isinstance(item.get("definitions")[0].get("examples"), list)
-
-    def is_empty(self, item) -> bool:
-        return not item.get("definitions")[0].get("examples")
-
-    def get_definition_id(self, definition: str) -> int:
-        def_row = self.sqlite.query_definition(definition["definition"])
-        return def_row[1]
+    def definitions_are_not_a_list(self, item) -> bool:
+        return not isinstance(item.get("definitions"), list)
 
     def get_word_id(self, item) -> int:
         self.sqlite.connect()
         word_row = self.sqlite.query_word(item["word"], item["word_type"])
         return word_row[1]
+
+    def definition_is_not_valid(self, definition: dict) -> bool:
+        if self.is_def_empty(definition):
+            return True
+        if self.examples_are_not_a_list(definition):
+            return True
+        if self.is_examples_list_empty(definition):
+            return True
+        return False
+
+    def is_def_empty(self, item) -> bool:
+        return not item.get("definition")
+
+    def examples_are_not_a_list(self, item) -> bool:
+        return not isinstance(item.get("examples"), list)
+
+    def is_examples_list_empty(self, item) -> bool:
+        return not len(item.get("examples"))
+
+    def get_definition_id(self, definition: str) -> int:
+        def_row = self.sqlite.query_definition(definition["definition"])
+        return def_row[1]
+
+    def is_example_empty(self, item) -> bool:
+        return item["example"] == ""
 
     def insert_word_id_into(self, data: dict) -> dict:
         new_data = deepcopy(data)
@@ -169,13 +192,7 @@ class SaveExamplePipeline:
         return new_data
 
     def save_example(self, example: dict) -> None:
-        if self.example_is_empty(example):
-            return
-
         self.sqlite.insert_example(example)
-
-    def example_is_empty(self, data: dict) -> str:
-        return data["example"] == ""
 
     def print_result(self, item) -> None:
         word = item["word"]
