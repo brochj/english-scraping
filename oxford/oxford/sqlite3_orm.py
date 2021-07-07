@@ -86,13 +86,15 @@ class SqliteORM:
         context = values.get("context")
         labels = values.get("labels")
         definition_id = values.get("definition_id")
+        word_id = values.get("word_id")
         cursor.execute(
-            "INSERT INTO examples VALUES (NULL, ?, ?, ?, ?)",
+            "INSERT INTO examples VALUES (NULL, ?, ?, ?, ?, ?)",
             (
                 example,
                 context,
                 labels,
                 definition_id,
+                word_id,
             ),
         )
         return cursor.lastrowid

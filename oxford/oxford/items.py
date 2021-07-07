@@ -82,3 +82,4 @@ class ExampleItem(scrapy.Item):
     context = scrapy.Field()
     labels = scrapy.Field()
     definition_id = scrapy.Field()
+    word_id = scrapy.Field()

@@ -32,6 +32,8 @@ EXAMPLES_TABLE = """CREATE TABLE IF NOT EXISTS examples (
         context TEXT,
         labels TEXT,
         definition_id INTEGER,
+        word_id INTEGER,
         FOREIGN KEY (definition_id) REFERENCES words (id)
+        FOREIGN KEY (word_id) REFERENCES words (id)
     )
 """

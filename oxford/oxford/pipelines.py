@@ -112,6 +112,7 @@ class SaveDefinitionPipeline:
 class SaveExamplePipeline:
     def __init__(self):
         print_header("SaveExamplePipeline: Enabled")
+        self.word_id = None
         self.definition_id = None
         self.sqlite = SqliteORM("dictionary.db")
         self.create_definitions_table(EXAMPLES_TABLE)
@@ -128,13 +129,15 @@ class SaveExamplePipeline:
             return item
 
         self.sqlite.connect()
+        self.word_id = self.get_word_id(item)
 
         for definition in item["definitions"]:
             self.definition_id = self.get_definition_id(definition)
 
             for example in definition["examples"]:
-                new_example = self.insert_definition_id_into(example)
-                self.save_example(new_example)
+                new_example = self.insert_word_id_into(example)
+                final_example = self.insert_definition_id_into(new_example)
+                self.save_example(final_example)
 
         self.sqlite.try_to_commit_and_close()
         self.print_result(item)
@@ -149,6 +152,16 @@ class SaveExamplePipeline:
     def get_definition_id(self, definition: str) -> int:
         def_row = self.sqlite.query_definition(definition["definition"])
         return def_row[1]
+
+    def get_word_id(self, item) -> int:
+        self.sqlite.connect()
+        word_row = self.sqlite.query_word(item["word"], item["word_type"])
+        return word_row[1]
+
+    def insert_word_id_into(self, data: dict) -> dict:
+        new_data = deepcopy(data)
+        new_data["word_id"] = self.word_id
+        return new_data
 
     def insert_definition_id_into(self, data: dict) -> dict:
         new_data = deepcopy(data)
@@ -169,7 +182,9 @@ class SaveExamplePipeline:
         def_length = len(item["definitions"])
         ex_length = len([e for d in item["definitions"] for e in d["examples"]])
         print()
-        print(f"Word: {word} | Definitions: {def_length} | Examples: {ex_length}")
+        print(
+            f"Word: {word : <20}| Definitions: {def_length : ^3}| Examples: {ex_length : ^3}"
+        )
         print("_" * 50)
 
 
