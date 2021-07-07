@@ -13,7 +13,7 @@ from copy import deepcopy
 from itemadapter import ItemAdapter, is_item
 
 from oxford.sqlite3_orm import SqliteORM
-from oxford.models import WORDS_TABLE, DEFINITIONS_TABLE
+from oxford.models import WORDS_TABLE, DEFINITIONS_TABLE, EXAMPLES_TABLE
 
 
 class OxfordPipeline:
@@ -34,7 +34,7 @@ class SaveWordPipeline:
         self.last_word_id = None
         self.create_words_table(WORDS_TABLE)
 
-    def create_words_table(self, table):
+    def create_words_table(self, table) -> None:
         self.sqlite.connect()
         self.sqlite.create_table(table)
         self.sqlite.try_to_commit_and_close()
@@ -48,12 +48,11 @@ class SaveWordPipeline:
         self.sqlite.try_to_commit_and_close()
         return item
 
-    def is_word_item(self, item):
+    def is_word_item(self, item) -> str:
         return item.get("word_type")
 
-    def save_word(self, item):
+    def save_word(self, item) -> None:
         self.last_word_id = self.sqlite.insert_word(item)
-        print_header(f"WordItem saved into {self.sqlite.db_name}")
 
 
 class SaveDefinitionPipeline:
@@ -63,7 +62,7 @@ class SaveDefinitionPipeline:
         self.sqlite = SqliteORM("dictionary.db")
         self.create_definitions_table(DEFINITIONS_TABLE)
 
-    def create_definitions_table(self, table):
+    def create_definitions_table(self, table) -> None:
         self.sqlite.connect()
         self.sqlite.create_table(table)
         self.sqlite.try_to_commit_and_close()
@@ -87,7 +86,7 @@ class SaveDefinitionPipeline:
     def definition_is_not_a_list(self, item) -> bool:
         return not isinstance(item.get("definitions"), list)
 
-    def is_empty(self, item) -> bool:
+    def is_empty(self, item) -> list:
         return not item.get("definitions")
 
     def get_word_id(self, item) -> int:
@@ -100,15 +99,78 @@ class SaveDefinitionPipeline:
         new_data["word_id"] = self.word_id
         return new_data
 
-    def save_definition(self, definition: dict):
+    def save_definition(self, definition: dict) -> None:
         if self.definition_is_empty(definition):
             return
 
         self.sqlite.insert_definition(definition)
-        print_header(f"DefinitionItem saved into {self.sqlite.db_name}")
 
     def definition_is_empty(self, data: dict) -> bool:
         return data["definition"] == ""
+
+
+class SaveExamplePipeline:
+    def __init__(self):
+        print_header("SaveExamplePipeline: Enabled")
+        self.definition_id = None
+        self.sqlite = SqliteORM("dictionary.db")
+        self.create_definitions_table(EXAMPLES_TABLE)
+
+    def create_definitions_table(self, table) -> None:
+        self.sqlite.connect()
+        self.sqlite.create_table(table)
+        self.sqlite.try_to_commit_and_close()
+
+    def process_item(self, item, spider):
+        if self.examples_are_not_a_list(item):
+            return item
+        if self.is_empty(item):
+            return item
+
+        self.sqlite.connect()
+
+        for definition in item["definitions"]:
+            self.definition_id = self.get_definition_id(definition)
+
+            for example in definition["examples"]:
+                new_example = self.insert_definition_id_into(example)
+                self.save_example(new_example)
+
+        self.sqlite.try_to_commit_and_close()
+        self.print_result(item)
+        return item
+
+    def examples_are_not_a_list(self, item) -> bool:
+        return not isinstance(item.get("definitions")[0].get("examples"), list)
+
+    def is_empty(self, item) -> bool:
+        return not item.get("definitions")[0].get("examples")
+
+    def get_definition_id(self, definition: str) -> int:
+        def_row = self.sqlite.query_definition(definition["definition"])
+        return def_row[1]
+
+    def insert_definition_id_into(self, data: dict) -> dict:
+        new_data = deepcopy(data)
+        new_data["definition_id"] = self.definition_id
+        return new_data
+
+    def save_example(self, example: dict) -> None:
+        if self.example_is_empty(example):
+            return
+
+        self.sqlite.insert_example(example)
+
+    def example_is_empty(self, data: dict) -> str:
+        return data["example"] == ""
+
+    def print_result(self, item) -> None:
+        word = item["word"]
+        def_length = len(item["definitions"])
+        ex_length = len([e for d in item["definitions"] for e in d["examples"]])
+        print()
+        print(f"Word: {word} | Definitions: {def_length} | Examples: {ex_length}")
+        print("_" * 50)
 
 
 class DuplicatesWordsSQLitePipeline:

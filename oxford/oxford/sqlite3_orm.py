@@ -30,7 +30,7 @@ class SqliteORM:
         cursor = self.connection.cursor()
         cursor.execute(table)
 
-    def insert_word(self, values: dict) -> None:
+    def insert_word(self, values: dict) -> int:
         cursor = self.connection.cursor()
         word = values.get("word")
         cefr = values.get("cefr")
@@ -49,7 +49,7 @@ class SqliteORM:
         )
         return cursor.lastrowid
 
-    def insert_definition(self, values: dict) -> None:
+    def insert_definition(self, values: dict) -> int:
         cursor = self.connection.cursor()
 
         definition = values.get("definition")
@@ -75,6 +75,24 @@ class SqliteORM:
                 use,
                 synonyms,
                 word_id,
+            ),
+        )
+        return cursor.lastrowid
+
+    def insert_example(self, values: dict) -> int:
+        cursor = self.connection.cursor()
+
+        example = values.get("example")
+        context = values.get("context")
+        labels = values.get("labels")
+        definition_id = values.get("definition_id")
+        cursor.execute(
+            "INSERT INTO examples VALUES (NULL, ?, ?, ?, ?)",
+            (
+                example,
+                context,
+                labels,
+                definition_id,
             ),
         )
         return cursor.lastrowid

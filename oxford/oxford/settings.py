@@ -19,6 +19,10 @@ USER_AGENT = "Mozilla/5.0"
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = False
 
+# Minimum level to log. Available levels are:
+# #CRITICAL, ERROR, WARNING, INFO, DEBUG. For more info see Logging.
+LOG_LEVEL = "INFO"
+
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 # CONCURRENT_REQUESTS = 32
 
@@ -65,10 +69,11 @@ DOWNLOAD_DELAY = 1
 ITEM_PIPELINES = {
     # "oxford.pipelines.OxfordPipeline": 300,
     # "oxford.pipelines.DuplicatesPipeline": 290,
-    # "oxford.pipelines.DuplicatesWordsSQLitePipeline": 298,
+    "oxford.pipelines.DuplicatesWordsSQLitePipeline": 298,
     # "oxford.pipelines.DuplicatesDefinitionsSQLitePipeline": 299,
     "oxford.pipelines.SaveWordPipeline": 300,
     "oxford.pipelines.SaveDefinitionPipeline": 301,
+    "oxford.pipelines.SaveExamplePipeline": 302,
     # "oxford.pipelines.JsonWriterPipeline": 400,
 }
 
@@ -87,8 +92,8 @@ ITEM_PIPELINES = {
 
 # Enable and configure HTTP caching (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html#httpcache-middleware-settings
-# HTTPCACHE_ENABLED = True
-# HTTPCACHE_EXPIRATION_SECS = 0
-# HTTPCACHE_DIR = 'httpcache'
-# HTTPCACHE_IGNORE_HTTP_CODES = []
+HTTPCACHE_ENABLED = True
+HTTPCACHE_EXPIRATION_SECS = 604800  # 7 days - 604800 secs
+HTTPCACHE_DIR = "httpcache"
+HTTPCACHE_IGNORE_HTTP_CODES = [404]
 # HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
