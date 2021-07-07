@@ -36,7 +36,7 @@ def rm_tags(dictionary: dict) -> dict:
     for key, data in value.items():
         if isinstance(data, list):
             continue
-        value[key] = remove_tags(data)
+        value[key] = remove_tags(data).replace("’", "'")
     return value
 
 

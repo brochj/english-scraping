@@ -1,5 +1,5 @@
 import sqlite3
-from sqlite3 import Connection
+from sqlite3 import Connection, Cursor
 from typing import Type
 
 
@@ -109,16 +109,16 @@ class SqliteORM:
     def last_word_id_inserted(self, cursor):
         return cursor.lastrowid
 
-    def query_word(self, word, word_type):
+    def query_word(self, word: str, word_type: str) -> tuple:
         cursor = self.connection.cursor()
         cursor.execute(
             f"SELECT rowid, * FROM words WHERE word = '{word}' AND word_type = '{word_type}'"
         )
         return cursor.fetchone()
 
-    def query_definition(self, definition):
+    def query_definition(self, definition: str) -> tuple:
         cursor = self.connection.cursor()
         cursor.execute(
-            f"SELECT rowid, * FROM definitions WHERE definition = '{definition}'"
+            f'SELECT rowid, * FROM definitions WHERE definition = "{definition}"'
         )
         return cursor.fetchone()
