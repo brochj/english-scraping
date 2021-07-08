@@ -6,6 +6,7 @@ from oxford.items import WordItem, DefinitionItem, ExampleItem
 from oxford.items import rm_tags, get_cefr_from_url
 from copy import deepcopy
 import json
+import ast
 
 
 class DefinitionSpider(scrapy.Spider):
@@ -20,21 +21,22 @@ class DefinitionSpider(scrapy.Spider):
     # ]
 
     base_url = "https://www.oxfordlearnersdictionaries.com/us/definition/english/"
-    words_list_file = "test"
+    words_list_file = "s123_w123"
 
-    def read_words_list(self):
-        with open(f"{self.words_list_file}.txt") as file:
-            return [line.rstrip() for line in file]
+    def read_dict_line_from_txt(self) -> list:
+        with open(f"{self.words_list_file}.txt", "r") as file:
+            return [ast.literal_eval(line.rstrip()) for line in file]
 
     def start_requests(self):
-        words = self.read_words_list()
-        urls = [self.base_url + word for word in words]
+        words = self.read_dict_line_from_txt()
 
-        for url in urls:
-            word = url.split("/")[-1]
-            yield scrapy.Request(url, self.parse, errback=self.handle_error)
+        for data in words:
+            url = self.base_url + data.get("word")
+            yield scrapy.Request(
+                url, self.parse, errback=self.handle_error, cb_kwargs=data
+            )
 
-    def parse(self, response):
+    def parse(self, response, word, speaking, writing, word_type):
         def_dict = {
             "definition": "",
             "cefr": "",
@@ -60,6 +62,8 @@ class DefinitionSpider(scrapy.Spider):
         loader.add_css("ipa_br", ".phons_br span::text")
         loader.add_css("word_type", ".webtop span.pos::text")
         loader.add_css("cefr", ".webtop div.symbols a::attr(href)")
+        loader.add_value("speaking", speaking)
+        loader.add_value("writing", writing)
 
         definitions = response.css(".top-container + ol")[0].css("li.sense")
         defs = []
@@ -104,34 +108,35 @@ class DefinitionSpider(scrapy.Spider):
         # so, it will take some time
         # Run first without it, then create a word list containing only the words
         # that generate error
-        # ENDPOINTS = [
-        #     "1",
-        #     "2",
-        #     "3",
-        #     "4",
-        #     "5",
-        #     "_1",
-        #     "_2",
-        #     "_3",
-        #     "_4",
-        #     "_5",
-        #     "1_1",
-        #     "1_2",
-        #     "1_3",
-        #     "1_4",
-        #     "1_5",
-        #     "2_1",
-        #     "2_2",
-        #     "2_3",
-        #     "2_4",
-        #     "2_5",
-        # ]
+        ENDPOINTS = [
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "_1",
+            "_2",
+            "_3",
+            "_4",
+            "_5",
+            "1_1",
+            "1_2",
+            "1_3",
+            "1_4",
+            "1_5",
+            "2_1",
+            "2_2",
+            "2_3",
+            "2_4",
+            "2_5",
+        ]
 
-        # for endpoint in ENDPOINTS:
-        #     yield scrapy.Request(
-        #         url=f"{url}{endpoint}".lower(),
-        #         callback=self.parse,
-        #     )
+        for endpoint in ENDPOINTS:
+            yield scrapy.Request(
+                url=f"{url}{endpoint}".lower(),
+                callback=self.parse,
+                cb_kwargs=failure.request.cb_kwargs,
+            )
 
     def save_to_txt(self, value, filename: str) -> None:
         with open(filename + ".txt", "a", encoding="utf-8") as file:

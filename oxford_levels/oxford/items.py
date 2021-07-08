@@ -43,6 +43,12 @@ def rm_tags(dictionary: dict) -> dict:
 # fmt: off
 class WordItem(scrapy.Item):  
     word = scrapy.Field(output_processor=TakeFirst())
+    speaking = scrapy.Field(output_processor=TakeFirst())
+    writing = scrapy.Field(output_processor=TakeFirst())
+    cefr = scrapy.Field(
+        input_processor=MapCompose(get_cefr_from_url),
+        output_processor=TakeFirst(),
+    )
     ipa_nam = scrapy.Field(
         input_processor=MapCompose(remove_whitespace), 
         output_processor=TakeFirst()  
@@ -54,10 +60,6 @@ class WordItem(scrapy.Item):
     word_type = scrapy.Field(
         input_processor=MapCompose(), 
         output_processor=TakeFirst()
-    )
-    cefr = scrapy.Field(
-        input_processor=MapCompose(get_cefr_from_url),
-        output_processor=TakeFirst(),
     )
     definitions = scrapy.Field()  # [DefinitionItem, DefinitionItem]
 # fmt: on

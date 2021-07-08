@@ -1,6 +1,8 @@
 .vscode/
 results/*.db
 oxford/*.db
+oxford_levels/*.db
+oxford_levels/*.txt
 
 words_lists/*.txt
 words_lists/*.py

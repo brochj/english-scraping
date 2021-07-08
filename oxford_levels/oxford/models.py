@@ -2,6 +2,8 @@ WORDS_TABLE = """CREATE TABLE IF NOT EXISTS words (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         word TEXT NOT NULL,
         cefr TEXT,
+        speaking TEXT,
+        writing TEXT,
         word_type TEXT,
         ipa_nam TEXT,
         ipa_br TEXT

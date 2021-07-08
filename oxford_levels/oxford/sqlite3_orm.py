@@ -35,14 +35,18 @@ class SqliteORM:
         cursor = self.connection.cursor()
         word = values.get("word")
         cefr = values.get("cefr")
+        speaking = values.get("speaking")
+        writing = values.get("writing")
         word_type = values.get("word_type")
         ipa_nam = values.get("ipa_nam")
         ipa_br = values.get("ipa_br")
         cursor.execute(
-            "INSERT INTO words VALUES (NULL, ?, ?, ?, ?, ?)",
+            "INSERT INTO words VALUES (NULL, ?, ?, ?, ?, ?, ?, ?)",
             (
                 word,
                 cefr,
+                speaking,
+                writing,
                 word_type,
                 ipa_nam,
                 ipa_br,
