@@ -96,7 +96,46 @@ class DefinitionSpider(scrapy.Spider):
 
     def handle_error(self, failure):
         url = failure.request.url
+        self.save_to_txt(url, "url_failures")
         self.logger.error("Failure type: %s, URL: %s", failure.type, url)
+        # if you want to try more endpoints with the word that occured error
+        # uncomment the next lines
+        # Attention: For each Error, it will try more 20 endpoints
+        # so, it will take some time
+        # Run first without it, then create a word list containing only the words
+        # that generate error
+        # ENDPOINTS = [
+        #     "1",
+        #     "2",
+        #     "3",
+        #     "4",
+        #     "5",
+        #     "_1",
+        #     "_2",
+        #     "_3",
+        #     "_4",
+        #     "_5",
+        #     "1_1",
+        #     "1_2",
+        #     "1_3",
+        #     "1_4",
+        #     "1_5",
+        #     "2_1",
+        #     "2_2",
+        #     "2_3",
+        #     "2_4",
+        #     "2_5",
+        # ]
+
+        # for endpoint in ENDPOINTS:
+        #     yield scrapy.Request(
+        #         url=f"{url}{endpoint}".lower(),
+        #         callback=self.parse,
+        #     )
+
+    def save_to_txt(self, value, filename: str) -> None:
+        with open(filename + ".txt", "a", encoding="utf-8") as file:
+            file.write(str(value) + "\n")
 
     def printer(self, value: str = "aqui"):
         self.logger.info("-" * 50)
